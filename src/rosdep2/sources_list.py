@@ -32,12 +32,11 @@ from __future__ import print_function
 import os
 import sys
 import yaml
+from rosdep2.shell_utils import FakeURLOpener as urlopen
 try:
-    from urllib.request import urlopen
     from urllib.error import URLError
     import urllib.request as request
 except ImportError:
-    from urllib2 import urlopen
     from urllib2 import URLError
     import urllib2 as request
 try:
@@ -512,6 +511,7 @@ def update_sources_list(sources_list_dir=None, sources_cache_dir=None,
                     print('Skip end-of-life distro "%s"' % dist_name)
                     continue
         print('Add distro "%s"' % dist_name)
+        # import pdb; pdb.set_trace()
         rds = RosDistroSource(dist_name)
         rosdep_data = get_gbprepo_as_rosdep_data(dist_name)
         # Store Python version from REP153

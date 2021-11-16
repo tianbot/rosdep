@@ -103,3 +103,50 @@ def create_tempfile_from_string_and_execute(string_script, path=None, exec_fn=No
 
     rd_debug('Return code was: %s' % (result))
     return result == 0
+
+
+class FakeURLOpener(object):
+    url_map = {
+        'github.com': 'hub.fastgit.org',
+        'raw.githubusercontent.com': 'raw.fastgit.org',
+    }
+    def __init__(self, url, **kwargs):
+        self.url = url if isinstance(url, str) else url.get_full_url()
+        self.lftp_bin = read_stdout(['which', 'lftp']).strip() or None
+        assert self.lftp_bin is not None, 'lftp not found in PATH, please install it.'
+
+    def read(self, skip_decode=True):
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            _, error = self.lftp(tmp_file.name)
+            if error:
+                raise Exception('lftp failed: %s' % error)
+            contents = tmp_file.read()
+            if isinstance(contents, str) or skip_decode:
+                return contents
+            else:
+                return contents.decode('utf-8')
+    
+    def close(self):
+        pass
+
+    def lftp(self, dst_path):
+        """Download file over bad connection network env with lftp"""
+        url = self.url
+        for key, value in self.url_map.items():
+            if key in self.url:
+                url = self.url.replace(key, value)
+                break
+
+        arg_list = [
+            self.lftp_bin,
+            '-e',
+            """
+            set net:idle 10;
+            set net:max-retries 0;
+            set net:reconnect-interval-base 3;
+            set net:reconnect-interval-max 3;
+            set http:user-agent 'rosdep/1.0';
+            pget -n 10 -c {} -o {}; exit""".format(url, dst_path),
+        ]
+        # print(url)
+        return read_stdout(arg_list, capture_stderr=True)

@@ -28,6 +28,9 @@
 # Author Paul Mathieu/paul@osrfoundation.org
 
 import rosdistro
+from rosdep2.shell_utils import FakeURLOpener
+
+rosdistro.load_url = lambda url, **kwargs: FakeURLOpener(url).read(**kwargs)
 
 
 class PreRep137Warning(UserWarning):

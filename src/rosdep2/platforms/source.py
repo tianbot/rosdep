@@ -30,12 +30,11 @@
 from __future__ import print_function
 
 import os
+from rosdep2.shell_utils import FakeURLOpener as urlopen
 try:
-    from urllib.request import urlopen
     from urllib.request import urlretrieve
     from urllib.error import URLError
 except ImportError:
-    from urllib2 import urlopen
     from urllib import urlretrieve
     from urllib2 import URLError
 import hashlib
