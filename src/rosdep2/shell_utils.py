@@ -107,7 +107,7 @@ def create_tempfile_from_string_and_execute(string_script, path=None, exec_fn=No
 
 class FakeURLOpener(object):
     url_map = {
-        'github.com': 'hub.fastgit.org',
+        'github.com': 'hub.fastgit.xyz',
         'raw.githubusercontent.com': 'raw.fastgit.org',
     }
     def __init__(self, url, **kwargs):
@@ -141,8 +141,9 @@ class FakeURLOpener(object):
             self.lftp_bin,
             '-e',
             """
+            set ssl:verify-certificate false;
             set net:idle 10;
-            set net:max-retries 0;
+            set net:max-retries 3;
             set net:reconnect-interval-base 3;
             set net:reconnect-interval-max 3;
             set http:user-agent 'rosdep/1.0';
